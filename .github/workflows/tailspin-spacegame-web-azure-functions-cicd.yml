@@ -6,6 +6,7 @@ on:
       - main
 
 jobs:
+  # Build Stage
   build:
     name: Build the web application
     runs-on: ubuntu-20.04
@@ -61,3 +62,40 @@ jobs:
         with:
           name: drop
           path: ./publish
+
+
+  # Deploy Stage
+  deploy:
+    name: Deploy the Web Application
+    runs-on: ubuntu-20.04
+    needs: build # This ensures the Deploy job only runs if Build succeeds
+
+    steps:
+      # Download the artifact from the build job
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: drop
+
+      # Deploy Web App
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ secrets.WEBAPP_NAME }}
+          slot-name: production
+          package: ./publish
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # Deploy Function App
+      - name: Deploy to Azure Function App
+        uses: azure/functions-action@v1
+        with:
+          app-name: ${{ secrets.FUNCTIONAPP_NAME }}
+          package: ./publish
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
