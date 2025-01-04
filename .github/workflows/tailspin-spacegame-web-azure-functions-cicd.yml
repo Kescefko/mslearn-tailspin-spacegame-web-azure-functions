@@ -1,0 +1,63 @@
+name: Build Web Application
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build the web application
+    runs-on: ubuntu-20.04
+
+    env:
+      BUILD_CONFIGURATION: Release
+      WWWROOT_DIR: Tailspin.SpaceGame.Web/wwwroot
+      DOTNET_SDK_VERSION: 6.0.x
+
+    steps:
+      # Checkout the code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Use the specified .NET SDK version
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_SDK_VERSION }}
+
+      # Install NPM dependencies
+      - name: Install NPM Packages
+        run: npm install
+
+      # Compile Sass assets
+      - name: Compile Sass Assets
+        run: ./node_modules/.bin/node-sass ${{ env.WWWROOT_DIR }} --output ${{ env.WWWROOT_DIR }}
+
+      # Run Gulp tasks
+      - name: Run Gulp Tasks
+        run: npx gulp
+
+      # Write build info
+      - name: Write Build Info
+        run: echo "$(GITHUB_REPOSITORY), ${{ github.run_id }}, ${{ github.run_number }}" > buildinfo.txt
+        working-directory: ${{ env.WWWROOT_DIR }}
+
+      # Restore .NET dependencies
+      - name: Restore .NET Dependencies
+        run: dotnet restore
+
+      # Build the project
+      - name: Build the Project
+        run: dotnet build --no-restore --configuration ${{ env.BUILD_CONFIGURATION }}
+
+      # Publish the project
+      - name: Publish the Project
+        run: dotnet publish --no-build --configuration ${{ env.BUILD_CONFIGURATION }} --output ./publish
+
+      # Upload the artifact
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: drop
+          path: ./publish
