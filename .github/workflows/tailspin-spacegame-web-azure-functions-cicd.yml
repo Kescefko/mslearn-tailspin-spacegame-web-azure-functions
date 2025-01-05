@@ -102,3 +102,12 @@ jobs:
         with:
           app-name: ${{ secrets.FUNCTIONAPP_NAME }}
           package: '.'
+
+      # Set App Settings for Web App
+      - name: Configure App Settings
+        run: |
+          az webapp config appsettings set \
+            --name ${{ secrets.WEBAPP_NAME }} \
+            --resource-group ${{ secrets.RESOURCE_GROUP_NAME }} \
+            --settings \
+              AppSettings__LeaderboardFunctionUrl=http://${{ secrets.LEADERBOARD_APP_NAME }}.azurewebsites.net/api/LeaderboardFunction
