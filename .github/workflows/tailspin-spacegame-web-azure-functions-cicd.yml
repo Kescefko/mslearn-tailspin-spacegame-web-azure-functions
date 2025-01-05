@@ -76,6 +76,11 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: drop
+      
+      # check download artifact
+      - name: List Downloaded Artifact Contents
+        run: |
+          ls -l 
 
       # Login to Azure using service principal
       - name: Login to Azure
@@ -89,11 +94,11 @@ jobs:
         with:
           app-name: ${{ secrets.WEBAPP_NAME }}
           slot-name: production
-          package: ./drop
+          package: ./publish
 
       # Deploy Function App
       - name: Deploy to Azure Function App
         uses: azure/functions-action@v1
         with:
           app-name: ${{ secrets.FUNCTIONAPP_NAME }}
-          package: ./drop
+          package: ./publish
