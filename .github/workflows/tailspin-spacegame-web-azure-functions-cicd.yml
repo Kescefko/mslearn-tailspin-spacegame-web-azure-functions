@@ -89,11 +89,11 @@ jobs:
         with:
           app-name: ${{ secrets.WEBAPP_NAME }}
           slot-name: production
-          package: ./publish
+          package: ./drop
 
       # Deploy Function App
       - name: Deploy to Azure Function App
         uses: azure/functions-action@v1
         with:
           app-name: ${{ secrets.FUNCTIONAPP_NAME }}
-          package: ./publish
+          package: ./drop
